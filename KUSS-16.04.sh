@@ -215,6 +215,29 @@ if [ "$KSK_SSH_CHANGE_PORT" = true ]; then
 	printf "[${GRNT}INFO${NOCT}] Checking which port SSH is set to listen on.\n"
 	echo "$KSK_DATETIME kuss: [INFO] Checking which port SSH is set to listen on." >> $LogFile
 	
+	ssh_port="`grep Port /etc/ssh/sshd_config | awk '{print $2}'`"
+	printf "\t[${GRNT}INFO${NOCT}] SSH is set to run on port '$ssh_port'.\n"
+	echo "$KSK_DATETIME kuss: [INFO] SSH is set to run on port '$ssh_port'." >> $LogFile
+	
+	if [ "$KSK_SET_MODE" = true ] && [ "$ssh_port" != "$KSK_SSH_PORT" ]; then
+		printf "\t[${GRNT}INFO${NOCT}] Setting SSH to run on port '$KSK_SSH_PORT'.\n"
+		echo "$KSK_DATETIME kuss: [INFO] Setting SSH to run on port '$KSK_SSH_PORT'." >> $LogFile
+	
+		if [ ! -e "$KSK_BACKUP/SSH_CHANGE_PORT" ]; then
+			mkdir "$KSK_BACKUP/SSH_CHANGE_PORT"
+		fi
+			
+		cp /etc/ssh/sshd_config "$KSK_BACKUP/SSH_CHANGE_PORT"
+		
+		# change port
+		sed -i "/Port $ssh_port/c\Port $KSK_SSH_PORT" /etc/ssh/sshd_config
+		
+		printf "\t[${GRNT}INFO${NOCT}] SSH is set to run on port '$KSK_SSH_PORT'. Restarting SSH...\n"
+		echo "$KSK_DATETIME kuss: [INFO] SSH is set to run on port '$KSK_SSH_PORT'. Restarting SSH..." >> $LogFile
+		
+		# Restart SSH service for changes to take effect
+		systemctl restart sshd.service
+	fi
 	echo ""
 fi
 
@@ -223,6 +246,37 @@ fi
 if [ "$KSK_SSH_CHANGE_LISTEN_ADDR" = true ]; then
 	printf "[${GRNT}INFO${NOCT}] Checking which address SSH is set to listen on.\n"
 	echo "$KSK_DATETIME kuss: [INFO] Checking which address SSH is set to listen on." >> $LogFile
+	count=`grep "^[^#;]" /etc/ssh/sshd_config | grep -c 'ListenAddress'`
+	
+	if [ "$count" -eq 1 ]; then
+		commout=`grep "^[^#;]" /etc/ssh/sshd_config | grep 'ListenAddress' | awk '{print $2}'`
+		printf "\t[${GRNT}OK${NOCT}] SSH is listening on '$commout'.\n"
+		echo "$KSK_DATETIME kuss: [INFO] SSH is listening on '$commout'." >> $LogFile
+	else
+		printf "\t[${YELT}WARNING${NOCT}] SSH is listening on all addresses.\n"
+		echo "$KSK_DATETIME kuss: [WARNING] SSH is listening on all addresses." >> $LogFile
+		commout="0.0.0.0"
+	fi
+	
+	if [ "$KSK_SET_MODE" = true ]; then
+		printf "\t[${GRNT}INFO${NOCT}] Setting SSH listening address to '$KSK_SSH_LISTEN_ADDR'.\n"
+		echo "$KSK_DATETIME kuss: [INFO] Setting SSH listening address to '$KSK_SSH_LISTEN_ADDR'." >> $LogFile	
+		
+		if [ ! -e "$KSK_BACKUP/SSH_CHANGE_ADDR" ]; then
+			mkdir "$KSK_BACKUP/SSH_CHANGE_ADDR"
+		fi
+			
+		cp /etc/ssh/sshd_config "$KSK_BACKUP/SSH_CHANGE_ADDR"
+		
+		# change listen address
+		sed -i "/ListenAddress $commout/c\ListenAddress $KSK_SSH_LISTEN_ADDR" /etc/ssh/sshd_config
+		
+		printf "\t[${GRNT}OK${NOCT}] SSH listening address is now '$KSK_SSH_LISTEN_ADDR'. Restarting SSH...\n"
+		echo "$KSK_DATETIME kuss: [INFO] SSH listening address is now '$KSK_SSH_LISTEN_ADDR'. Restarting SSH..." >> $LogFile
+		
+		# Restart SSH service for changes to take effect
+		systemctl restart sshd.service
+	fi
 	
 	echo ""
 fi

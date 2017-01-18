@@ -73,17 +73,17 @@ KSK_SSH_DISABLE_ROOT=false
 
 ### change port that SSH uses
 KSK_SSH_CHANGE_PORT=false
-KSK_SSH_PORT_VALUE="22"
+KSK_SSH_PORT="22"
 
 ### change address that SSH will listen on
 KSK_SSH_CHANGE_LISTEN_ADDR=false
 KSK_SSH_LISTEN_ADDR=""
 
 ### turn off X11 forwarding in SSH
-KSK_SSH_X11_FORWARDING=false
+KSK_SSH_DISABLE_X11_FORWARDING=false
 
 ### turn on verbose logging in SSH
-KSK_SSH_VERBOSE_LOG=false
+KSK_SSH_SET_VERBOSE_LOG=false
 
 ### set grace time for SSH connections being established
 KSK_SSH_CHANGE_GRACE_TIME=false
