@@ -166,6 +166,101 @@ if [ "$KSK_INSTALL_GAUTH" = true ]; then
 			echo "$KSK_DATETIME kuss: [INFO] Google Authenticator was not set up." >> $LogFile
 		fi
 	fi
+	
+	echo ""
+fi
+
+#######################
+
+if [ "$KSK_SSH_DISABLE_ROOT" = true ]; then
+	printf "[${GRNT}INFO${NOCT}] Checking if root login is disabled in SSH.\n"
+	echo "$KSK_DATETIME kuss: [INFO] Checking if root login is disabled in SSH." >> $LogFile
+	
+	if [ "`grep -c 'PermitRootLogin no' /etc/ssh/sshd_config`" -lt 1 ]; then
+		printf "\t[${YELT}WARNING${NOCT}] Root login is enabled in SSH.\n"
+		echo "$KSK_DATETIME kuss: [WARNING]  Root login is enabled in SSH." >> $LogFile
+		
+		if [ "$KSK_SET_MODE" = true ]; then
+			printf "\t[${GRNT}INFO${NOCT}] Disabling root login in SSH.\n"
+			echo "$KSK_DATETIME kuss: [INFO] Disabling root login in SSH." >> $LogFile
+			
+			if [ ! -e "$KSK_BACKUP/DISABLE_ROOT_SSH" ]; then
+				mkdir "$KSK_BACKUP/DISABLE_ROOT_SSH"
+			fi
+			
+			cp /etc/ssh/sshd_config "$KSK_BACKUP/DISABLE_ROOT_SSH"
+			if [ "`grep -c 'PermitRootLogin' /etc/ssh/sshd_config`" -ge 1 ]; then
+				sed -i '/PermitRootLogin/c\PermitRootLogin no' /etc/ssh/sshd_config
+			else
+				echo "PermitRootLogin no" >> /etc/ssh/sshd_config
+			fi
+			
+			printf "\t[${GRNT}OK${NOCT}] Root login is disabled in SSH. Restarting SSH...\n"
+			echo "$KSK_DATETIME kuss: [OK]  Root login is disabled in SSH. Restarting SSH..." >> $LogFile	
+			
+			# Restart SSH service for changes to take effect
+			systemctl restart sshd.service
+		fi		
+	else	
+		printf "\t[${GRNT}OK${NOCT}] Root login is disabled in SSH.\n"
+		echo "$KSK_DATETIME kuss: [OK]  Root login is disabled in SSH." >> $LogFile			
+	fi
+	
+	echo ""
+fi
+
+#######################
+
+if [ "$KSK_SSH_CHANGE_PORT" = true ]; then
+	printf "[${GRNT}INFO${NOCT}] Checking which port SSH is set to listen on.\n"
+	echo "$KSK_DATETIME kuss: [INFO] Checking which port SSH is set to listen on." >> $LogFile
+	
+	echo ""
+fi
+
+#######################
+
+if [ "$KSK_SSH_CHANGE_LISTEN_ADDR" = true ]; then
+	printf "[${GRNT}INFO${NOCT}] Checking which address SSH is set to listen on.\n"
+	echo "$KSK_DATETIME kuss: [INFO] Checking which address SSH is set to listen on." >> $LogFile
+	
+	echo ""
+fi
+
+#######################
+
+if [ "$KSK_SSH_DISABLE_X11_FORWARDING" = true ]; then
+	printf "[${GRNT}INFO${NOCT}] Checking if X11 Forwarding is disabled in SSH.\n"
+	echo "$KSK_DATETIME kuss: [INFO] Checking if X11 Forwarding is disabled in SSH." >> $LogFile
+	
+	echo ""
+fi
+
+#######################
+
+if [ "$KSK_SSH_SET_VERBOSE_LOG" = true ]; then
+	printf "[${GRNT}INFO${NOCT}] Checking to see if logging is set to verbose in SSH.\n"
+	echo "$KSK_DATETIME kuss: [INFO] Checking to see if logging is set to verbose in SSH." >> $LogFile
+	
+	echo ""
+fi
+
+#######################
+
+if [ "$KSK_SSH_CHANGE_GRACE_TIME" = true ]; then
+	printf "[${GRNT}INFO${NOCT}] Checking grace time for new SSH connections.\n"
+	echo "$KSK_DATETIME kuss: [INFO] Checking grace time for new SSH connections." >> $LogFile
+	
+	echo ""
+fi
+
+#######################
+
+if [ "$KSK_SSH_SET_LOGIN_GROUP" = true ]; then
+	printf "[${GRNT}INFO${NOCT}] Checking if a login group is set for SSH.\n"
+	echo "$KSK_DATETIME kuss: [INFO] Checking if a login group is set for SSH." >> $LogFile
+	
+	echo ""
 fi
 
 
