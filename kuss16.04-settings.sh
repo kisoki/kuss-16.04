@@ -68,4 +68,28 @@ KSK_LOAD_OTP=false
 KSK_LOAD_RSA=false
 KSK_KEY_FILES="./keys.tar.gz"
 
+### used to disable root login in SSH
+KSK_SSH_DISABLE_ROOT=false
 
+### change port that SSH uses
+KSK_SSH_CHANGE_PORT=false
+KSK_SSH_PORT_VALUE="22"
+
+### change address that SSH will listen on
+KSK_SSH_CHANGE_LISTEN_ADDR=false
+KSK_SSH_LISTEN_ADDR=""
+
+### turn off X11 forwarding in SSH
+KSK_SSH_X11_FORWARDING=false
+
+### turn on verbose logging in SSH
+KSK_SSH_VERBOSE_LOG=false
+
+### set grace time for SSH connections being established
+KSK_SSH_CHANGE_GRACE_TIME=false
+KSK_SSH_GRACE_TIME="60"
+
+### set group for allowed SSH logins
+KSK_SSH_SET_LOGIN_GROUP=false
+KSK_SSH_LOGIN_GROUP="sshlogin"
+KSK_SSH_LOGIN_GROUP_USERS="<username>,<username>" # This will set who should have access to this group when users are added.
