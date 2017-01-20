@@ -262,7 +262,7 @@ if [ "$KSK_SSH_CHANGE_LISTEN_ADDR" = true ]; then
 		printf "\t[${GRNT}INFO${NOCT}] Setting SSH listening address to '$KSK_SSH_LISTEN_ADDR'.\n"
 		echo "$KSK_DATETIME kuss: [INFO] Setting SSH listening address to '$KSK_SSH_LISTEN_ADDR'." >> $LogFile	
 		
-		if [ ! -e "$KSK_BACKUP/SSH_CHANGE_ADDR" ]; then
+		if [ ! -e "$KSK_BACKUP/SSH_CHANGE_ADDR" ] && [ "$commout" != "$KSK_SSH_LISTEN_ADDR"]; then
 			mkdir "$KSK_BACKUP/SSH_CHANGE_ADDR"
 		fi
 			
@@ -286,7 +286,34 @@ fi
 if [ "$KSK_SSH_DISABLE_X11_FORWARDING" = true ]; then
 	printf "[${GRNT}INFO${NOCT}] Checking if X11 Forwarding is disabled in SSH.\n"
 	echo "$KSK_DATETIME kuss: [INFO] Checking if X11 Forwarding is disabled in SSH." >> $LogFile
+	commout1="`grep 'X11Forwarding' /etc/ssh/sshd_config | awk '{print $2}'`"
+	if [ "$commout1" = "yes" ]; then
+		printf "\t[${YELT}WARNING${NOCT}] X11 Forwarding is enabled in SSH.\n"
+		echo "$KSK_DATETIME kuss: [WARNING] X11 Forwarding is enabled in SSH." >> $LogFile	
+	else
+		printf "\t[${GRNT}OK${NOCT}] X11 Forwarding is disabled in SSH.\n"
+		echo "$KSK_DATETIME kuss: [OK] X11 Forwarding is disabled in SSH." >> $LogFile	
+	fi
 	
+	if [ "$KSK_SET_MODE" = true ] && [ "$commout1" = "yes" ]; then
+		printf "\t[${GRNT}INFO${NOCT}] Disabling X11 Forwarding in SSH.\n"
+		echo "$KSK_DATETIME kuss: [INFO] Disabling X11 Forwarding in SSH." >> $LogFile
+		
+		if [ ! -e "$KSK_BACKUP/SSH_X11_FORWARD" ]; then
+			mkdir "$KSK_BACKUP/SSH_X11_FORWARD"
+		fi
+			
+		cp /etc/ssh/sshd_config "$KSK_BACKUP/SSH_X11_FORWARD"
+		
+		# Disable X11 Forwarding
+		sed -i "/X11Forwarding yes/c\X11Forwarding no" /etc/ssh/sshd_config
+		
+		printf "\t[${GRNT}INFO${NOCT}] Disabled X11 Forwarding in SSH. Restarting SSH...\n"
+		echo "$KSK_DATETIME kuss: [INFO] Disabled X11 Forwarding in SSH. Restarting SSH..." >> $LogFile
+		
+		# Restart SSH service for changes to take effect
+		systemctl restart sshd.service					
+	fi
 	echo ""
 fi
 
