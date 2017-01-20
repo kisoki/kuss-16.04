@@ -342,15 +342,15 @@ if [ "$KSK_SSH_SET_VERBOSE_LOG" = true ]; then
 		cp /etc/ssh/sshd_config "$KSK_BACKUP/SSH_VERBOSE_LOG"
 		
 		# set logging to verbose
-		tmpcomm=``grep "^[^#;]" /etc/ssh/sshd_config | grep -c 'LogLevel'``
+		tmpcomm=`grep "^[^#;]" /etc/ssh/sshd_config | grep -c 'LogLevel'`
 		if [ "$tmpcomm" -eq 0 ]; then
 			echo "LogLevel VERBOSE" >> /etc/ssh/sshd_config
 		else
 			sed -i '/LogLevel/c\LogLevel VERBOSE' /etc/ssh/sshd_config
 		fi	
 		
-		printf "\t[${GRNT}INFO${NOCT}] Setting SSH logging to 'VERBOSE'. Restarting SSH...\n"
-		echo "$KSK_DATETIME kuss: [INFO] Setting SSH logging to 'VERBOSE'. Restarting SSH..." >> $LogFile
+		printf "\t[${GRNT}INFO${NOCT}] Set SSH logging to 'VERBOSE'. Restarting SSH...\n"
+		echo "$KSK_DATETIME kuss: [INFO] Set SSH logging to 'VERBOSE'. Restarting SSH..." >> $LogFile
 		
 		# Restart SSH service for changes to take effect
 		systemctl restart sshd.service	
