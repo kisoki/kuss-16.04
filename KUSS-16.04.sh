@@ -322,7 +322,39 @@ fi
 if [ "$KSK_SSH_SET_VERBOSE_LOG" = true ]; then
 	printf "[${GRNT}INFO${NOCT}] Checking to see if logging is set to verbose in SSH.\n"
 	echo "$KSK_DATETIME kuss: [INFO] Checking to see if logging is set to verbose in SSH." >> $LogFile
+	commout2=`grep "^[^#;]" /etc/ssh/sshd_config | grep 'LogLevel' | awk '{print $2}'`
+	if [ "$commout2" != "VERBOSE" ]; then
+		printf "\t[${GRNT}INFO${NOCT}] SSH Logging is set to '$commout2'.\n"
+		echo "$KSK_DATETIME kuss: [INFO] SSH Logging is set to '$commout2'." >> $LogFile	
+	else
+		printf "\t[${GRNT}OK${NOCT}] SSH Logging is set to '$commout2'.\n"
+		echo "$KSK_DATETIME kuss: [OK] SSH Logging is set to '$commout2'." >> $LogFile		
+	fi
 	
+	if [ "$KSK_SET_MODE" = true ] && [ "$commout2" != "VERBOSE" ]; then
+		printf "\t[${GRNT}INFO${NOCT}] Setting SSH logging to 'VERBOSE'.\n"
+		echo "$KSK_DATETIME kuss: [INFO] Setting SSH logging to 'VERBOSE'." >> $LogFile
+		
+		if [ ! -e "$KSK_BACKUP/SSH_VERBOSE_LOG" ]; then
+			mkdir "$KSK_BACKUP/SSH_VERBOSE_LOG"
+		fi
+			
+		cp /etc/ssh/sshd_config "$KSK_BACKUP/SSH_VERBOSE_LOG"
+		
+		# set logging to verbose
+		tmpcomm=``grep "^[^#;]" /etc/ssh/sshd_config | grep -c 'LogLevel'``
+		if [ "$tmpcomm" -eq 0 ]; then
+			echo "LogLevel VERBOSE" >> /etc/ssh/sshd_config
+		else
+			sed -i '/LogLevel/c\LogLevel VERBOSE' /etc/ssh/sshd_config
+		fi	
+		
+		printf "\t[${GRNT}INFO${NOCT}] Setting SSH logging to 'VERBOSE'. Restarting SSH...\n"
+		echo "$KSK_DATETIME kuss: [INFO] Setting SSH logging to 'VERBOSE'. Restarting SSH..." >> $LogFile
+		
+		# Restart SSH service for changes to take effect
+		systemctl restart sshd.service	
+	fi
 	echo ""
 fi
 
