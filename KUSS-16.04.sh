@@ -258,7 +258,7 @@ if [ "$KSK_SSH_CHANGE_LISTEN_ADDR" = true ]; then
 		commout="0.0.0.0"
 	fi
 	
-	if [ "$KSK_SET_MODE" = true ] && [ "$commout" != "$KSK_SSH_LISTEN_ADDR"]; then
+	if [ "$KSK_SET_MODE" = true ] && [ "$commout" != "$KSK_SSH_LISTEN_ADDR" ]; then
 		printf "\t[${GRNT}INFO${NOCT}] Setting SSH listening address to '$KSK_SSH_LISTEN_ADDR'.\n"
 		echo "$KSK_DATETIME kuss: [INFO] Setting SSH listening address to '$KSK_SSH_LISTEN_ADDR'." >> $LogFile	
 		
