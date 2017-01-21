@@ -363,7 +363,39 @@ fi
 if [ "$KSK_SSH_CHANGE_GRACE_TIME" = true ]; then
 	printf "[${GRNT}INFO${NOCT}] Checking grace time for new SSH connections.\n"
 	echo "$KSK_DATETIME kuss: [INFO] Checking grace time for new SSH connections." >> $LogFile
+	commout=`grep "^[^#;]" /etc/ssh/sshd_config | grep 'LoginGraceTime' | awk '{print $2}'`
+	if [ "$commout" -gt 60 ]; then
+		printf "\t[${YELT}WARNING${NOCT}] SSH login grace time is set over a minute.\n"
+		echo "$KSK_DATETIME kuss: [WARNING] SSH login grace time is set over a minute." >> $LogFile	
+	else
+		printf "\t[${GRNT}OK${NOCT}] SSH login grace time is set under a minute.\n"
+		echo "$KSK_DATETIME kuss: [OK] SSH login grace time is set under a minute." >> $LogFile
+	fi
 	
+	if [ "$KSK_SET_MODE" = true ] && [ "$commout" -ne "$KSK_SSH_GRACE_TIME" ]; then
+		printf "\t[${GRNT}INFO${NOCT}] Setting SSH login grace time.\n"
+		echo "$KSK_DATETIME kuss: [INFO] Setting SSH login grace time." >> $LogFile
+		
+		if [ ! -e "$KSK_BACKUP/SSH_GRACE_TIME" ]; then
+			mkdir "$KSK_BACKUP/SSH_GRACE_TIME"
+		fi
+			
+		cp /etc/ssh/sshd_config "$KSK_BACKUP/SSH_GRACE_TIME"
+	
+		# set login grace time
+		tmpcomm=`grep "^[^#;]" /etc/ssh/sshd_config | grep -c 'LoginGraceTime'`
+		if [ "$tmpcomm" -eq 0 ]; then
+			echo "LoginGraceTime $KSK_SSH_GRACE_TIME" >> /etc/ssh/sshd_config
+		else
+			sed -i "/LoginGraceTime $commout/c\LoginGraceTime $KSK_SSH_GRACE_TIME" /etc/ssh/sshd_config
+		fi
+		
+		printf "\t[${GRNT}INFO${NOCT}] SSH login grace time set to '$KSK_SSH_GRACE_TIME' seconds. Restarting SSH...\n"
+		echo "$KSK_DATETIME kuss: [INFO] SSH login grace time set to '$KSK_SSH_GRACE_TIME' seconds. Restarting SSH..." >> $LogFile
+		
+		# Restart SSH service for changes to take effect
+		systemctl restart sshd.service		
+	fi
 	echo ""
 fi
 
@@ -372,6 +404,23 @@ fi
 if [ "$KSK_SSH_SET_LOGIN_GROUP" = true ]; then
 	printf "[${GRNT}INFO${NOCT}] Checking if a login group is set for SSH.\n"
 	echo "$KSK_DATETIME kuss: [INFO] Checking if a login group is set for SSH." >> $LogFile
+	commout=`grep "^[^#;]" /etc/ssh/sshd_config | grep 'AllowGroups' | awk '{print $2}'`
+	if [ ! -z "$commout" ]; then
+		printf "\t[${GRNT}OK${NOCT}] SSH login is only accessable to users in '$commout'.\n"
+		echo "$KSK_DATETIME kuss: [OK] SSH login is only accessable to users in '$commout'." >> $LogFile
+		for i in $(echo $commout | sed "s/,/ /g"); do
+			printf "\t[${GRNT}INFO${NOCT}] users in '$i':\n"
+			echo "$KSK_DATETIME kuss: [INFO] users in '$i'" >> $LogFile
+			
+			cOut="`grep $i /etc/group | cut -d':' -f4`"
+			printf "\t\t $cOut\n"
+			echo "$KSK_DATETIME kuss: [INFO] $cOut" >> $LogFile
+		done
+		
+	else
+		printf "\t[${YELT}WARNING${NOCT}] SSH is available to all users.\n"
+		echo "$KSK_DATETIME kuss: [WARNING] SSH is available to all users." >> $LogFile
+	fi
 	
 	echo ""
 fi
